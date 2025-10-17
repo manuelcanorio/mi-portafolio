@@ -19,8 +19,6 @@
             line-height: 1.6;
         }
 
-        /* Main Content */
-
         header {
             background: rgba(20, 20, 20, 0.95);
             backdrop-filter: blur(10px);
@@ -80,23 +78,6 @@
             width: 100%;
         }
 
-        .logout-btn {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #BB86FC 0%, #8e44ad 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .logout-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(187, 134, 252, 0.4);
-        }
-
         .hamburger {
             display: none;
             flex-direction: column;
@@ -112,7 +93,6 @@
             transition: all 0.3s ease;
         }
 
-        /* Hero Section */
         .hero {
             max-width: 1200px;
             margin: 60px auto;
@@ -158,7 +138,6 @@
             line-height: 1.8;
         }
 
-        /* Portfolio Section */
         .portfolio {
             max-width: 1200px;
             margin: 60px auto;
@@ -289,6 +268,7 @@
             border-radius: 5px;
             margin-right: 10px;
             border: 1px solid rgba(187, 134, 252, 0.3);
+            cursor: pointer;
         }
 
         .file-info {
@@ -317,7 +297,13 @@
             box-shadow: 0 3px 10px rgba(255, 107, 107, 0.4);
         }
 
-        /* Footer */
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #BB86FC;
+            font-size: 18px;
+        }
+
         footer {
             background: rgba(20, 20, 20, 0.95);
             color: #e0e0e0;
@@ -347,7 +333,6 @@
             text-shadow: 0 0 20px rgba(187, 134, 252, 0.6);
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .nav-links {
                 position: fixed;
@@ -386,11 +371,42 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            color: #fff;
+            font-size: 40px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
-    <!-- Main Content -->
-    <div class="main-content" id="mainContent" style="display: block;">
+    <div class="main-content">
         <header>
             <nav>
                 <div class="logo">✨ Mi Portafolio</div>
@@ -407,21 +423,18 @@
             </nav>
         </header>
 
-        <!-- Hero Section -->
         <section class="hero" id="inicio">
-        
             <h1>Canorio Bashualdo Manuel</h1>
             <p class="subtitle">Estudiante | Desarrollador | Diseñador</p>
             <p>Bienvenido a mi portafolio personal. Aquí encontrarás una colección de mis trabajos académicos organizados por unidades y semanas. Soy apasionado por el aprendizaje continuo y el desarrollo de proyectos innovadores.</p>
         </section>
 
-        <!-- Portfolio Section -->
         <section class="portfolio" id="portafolio">
             <h2 class="section-title">📚 Portafolio Académico</h2>
+            <div class="loading" id="loading">Cargando archivos...</div>
             <div class="units-container" id="unitsContainer"></div>
         </section>
 
-        <!-- Footer -->
         <footer id="contacto">
             <p>&copy; 2025 Canorio Bashualdo Manuel.</p>
             <div class="social-links">
@@ -432,32 +445,91 @@
         </footer>
     </div>
 
-    <script>
-        // Storage for files (in memory)
-        let portfolioData = {};
+    <div class="modal" id="imageModal">
+        <span class="modal-close" id="modalClose">&times;</span>
+        <img class="modal-content" id="modalImage">
+    </div>
 
-        // Initialize portfolio structure
-        function initPortfolio() {
-            for (let unit = 1; unit <= 4; unit++) {
-                portfolioData[`unit${unit}`] = {};
-                for (let week = 1; week <= 4; week++) {
-                    portfolioData[`unit${unit}`][`week${week}`] = [];
-                }
-            }
+    <script>
+        // IndexedDB setup
+        let db;
+        const DB_NAME = 'PortfolioDB';
+        const DB_VERSION = 1;
+        const STORE_NAME = 'files';
+
+        // Initialize IndexedDB
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => {
+                    db = request.result;
+                    resolve(db);
+                };
+
+                request.onupgradeneeded = (event) => {
+                    db = event.target.result;
+                    if (!db.objectStoreNames.contains(STORE_NAME)) {
+                        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+                        objectStore.createIndex('unit', 'unit', { unique: false });
+                        objectStore.createIndex('week', 'week', { unique: false });
+                    }
+                };
+            });
         }
 
-        // Initialize on page load
-        initPortfolio();
-        renderPortfolio();
+        // Save file to IndexedDB
+        function saveFile(unit, week, fileData) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                const request = objectStore.add({
+                    unit: unit,
+                    week: week,
+                    name: fileData.name,
+                    type: fileData.type,
+                    data: fileData.data,
+                    timestamp: Date.now()
+                });
 
-        // Hamburger menu
-        document.getElementById('hamburger').addEventListener('click', function() {
-            document.getElementById('navLinks').classList.toggle('active');
-        });
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Get files from IndexedDB
+        function getFiles(unit, week) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readonly');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                const request = objectStore.getAll();
+
+                request.onsuccess = () => {
+                    const allFiles = request.result;
+                    const filtered = allFiles.filter(f => f.unit === unit && f.week === week);
+                    resolve(filtered);
+                };
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Delete file from IndexedDB
+        function deleteFile(id) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                const request = objectStore.delete(id);
+
+                request.onsuccess = () => resolve();
+                request.onerror = () => reject(request.error);
+            });
+        }
 
         // Render portfolio
-        function renderPortfolio() {
+        async function renderPortfolio() {
             const container = document.getElementById('unitsContainer');
+            const loading = document.getElementById('loading');
             container.innerHTML = '';
 
             for (let unit = 1; unit <= 4; unit++) {
@@ -473,17 +545,19 @@
                 weeksGrid.className = 'weeks-grid';
 
                 for (let week = 1; week <= 4; week++) {
-                    const weekCard = createWeekCard(unit, week);
+                    const weekCard = await createWeekCard(unit, week);
                     weeksGrid.appendChild(weekCard);
                 }
 
                 unitDiv.appendChild(weeksGrid);
                 container.appendChild(unitDiv);
             }
+
+            loading.style.display = 'none';
         }
 
         // Create week card
-        function createWeekCard(unit, week) {
+        async function createWeekCard(unit, week) {
             const card = document.createElement('div');
             card.className = 'week-card';
 
@@ -497,7 +571,7 @@
             uploadArea.innerHTML = `
                 <div class="upload-icon">📁</div>
                 <p>Haz clic para subir archivos</p>
-                <input type="file" multiple accept="image/*,.pdf">
+                <input type="file" multiple accept="image/*,.pdf,.doc,.docx">
             `;
             card.appendChild(uploadArea);
 
@@ -506,71 +580,122 @@
             filesList.id = `files-unit${unit}-week${week}`;
             card.appendChild(filesList);
 
-            // Upload functionality
             const input = uploadArea.querySelector('input');
             uploadArea.addEventListener('click', () => input.click());
             
-            input.addEventListener('change', function(e) {
-                handleFileUpload(e.target.files, unit, week);
+            input.addEventListener('change', async function(e) {
+                await handleFileUpload(e.target.files, unit, week);
+                e.target.value = '';
             });
 
-            // Render existing files
-            renderFiles(unit, week);
+            await renderFiles(unit, week);
 
             return card;
         }
 
         // Handle file upload
-        function handleFileUpload(files, unit, week) {
-            Array.from(files).forEach(file => {
+        async function handleFileUpload(files, unit, week) {
+            for (const file of Array.from(files)) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = async function(e) {
                     const fileData = {
                         name: file.name,
                         type: file.type,
                         data: e.target.result
                     };
-                    portfolioData[`unit${unit}`][`week${week}`].push(fileData);
-                    renderFiles(unit, week);
+                    try {
+                        await saveFile(unit, week, fileData);
+                        await renderFiles(unit, week);
+                    } catch (error) {
+                        console.error('Error saving file:', error);
+                        alert('Error al guardar el archivo');
+                    }
                 };
                 reader.readAsDataURL(file);
-            });
+            }
         }
 
         // Render files
-        function renderFiles(unit, week) {
+        async function renderFiles(unit, week) {
             const filesList = document.getElementById(`files-unit${unit}-week${week}`);
             if (!filesList) return;
             
             filesList.innerHTML = '';
-            const files = portfolioData[`unit${unit}`][`week${week}`];
+            
+            try {
+                const files = await getFiles(unit, week);
 
-            files.forEach((file, index) => {
-                const fileItem = document.createElement('div');
-                fileItem.className = 'file-item';
+                files.forEach((file) => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
 
-                if (file.type.startsWith('image/')) {
-                    fileItem.innerHTML = `
-                        <img src="${file.data}" alt="${file.name}">
-                        <span class="file-info">${file.name}</span>
-                        <button class="delete-btn" onclick="deleteFile(${unit}, ${week}, ${index})">🗑️</button>
-                    `;
-                } else {
-                    fileItem.innerHTML = `
-                        <span class="file-info">📄 ${file.name}</span>
-                        <button class="delete-btn" onclick="deleteFile(${unit}, ${week}, ${index})">🗑️</button>
-                    `;
-                }
+                    if (file.type.startsWith('image/')) {
+                        const img = document.createElement('img');
+                        img.src = file.data;
+                        img.alt = file.name;
+                        img.onclick = () => openModal(file.data);
+                        
+                        const info = document.createElement('span');
+                        info.className = 'file-info';
+                        info.textContent = file.name;
+                        
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'delete-btn';
+                        deleteBtn.textContent = '🗑️';
+                        deleteBtn.onclick = async () => {
+                            await deleteFile(file.id);
+                            await renderFiles(unit, week);
+                        };
+                        
+                        fileItem.appendChild(img);
+                        fileItem.appendChild(info);
+                        fileItem.appendChild(deleteBtn);
+                    } else {
+                        const info = document.createElement('span');
+                        info.className = 'file-info';
+                        info.textContent = `📄 ${file.name}`;
+                        
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.className = 'delete-btn';
+                        deleteBtn.textContent = '🗑️';
+                        deleteBtn.onclick = async () => {
+                            await deleteFile(file.id);
+                            await renderFiles(unit, week);
+                        };
+                        
+                        fileItem.appendChild(info);
+                        fileItem.appendChild(deleteBtn);
+                    }
 
-                filesList.appendChild(fileItem);
-            });
+                    filesList.appendChild(fileItem);
+                });
+            } catch (error) {
+                console.error('Error rendering files:', error);
+            }
         }
 
-        // Delete file
-        function deleteFile(unit, week, index) {
-            portfolioData[`unit${unit}`][`week${week}`].splice(index, 1);
-            renderFiles(unit, week);
+        // Modal functions
+        function openModal(imageSrc) {
+            const modal = document.getElementById('imageModal');
+            const modalImg = document.getElementById('modalImage');
+            modal.classList.add('active');
+            modalImg.src = imageSrc;
         }
+
+        document.getElementById('modalClose').onclick = function() {
+            document.getElementById('imageModal').classList.remove('active');
+        };
+
+        document.getElementById('imageModal').onclick = function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        };
+
+        // Hamburger menu
+        document.getElementById('hamburger').addEventListener('click', function() {
+            document.getElementById('navLinks').classList.toggle('active');
+        });
 
         // Smooth scroll
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -583,6 +708,17 @@
                 }
             });
         });
+
+        // Initialize app
+        (async function() {
+            try {
+                await initDB();
+                await renderPortfolio();
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                document.getElementById('loading').textContent = 'Error al cargar la aplicación';
+            }
+        })();
     </script>
 </body>
 </html>
