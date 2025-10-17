@@ -78,6 +78,24 @@
             width: 100%;
         }
 
+        .clear-data-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+        }
+
+        .clear-data-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
         .hamburger {
             display: none;
             flex-direction: column;
@@ -206,6 +224,35 @@
             font-weight: 600;
             margin-bottom: 15px;
             color: #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .clear-week-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .clear-week-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 3px 10px rgba(255, 107, 107, 0.4);
+        }
+
+        .file-count {
+            background: rgba(187, 134, 252, 0.2);
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            color: #BB86FC;
+            margin-left: 8px;
         }
 
         .upload-area {
@@ -403,6 +450,16 @@
             font-size: 40px;
             cursor: pointer;
         }
+
+        .storage-info {
+            text-align: center;
+            padding: 10px;
+            background: rgba(187, 134, 252, 0.1);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #b0b0b0;
+        }
     </style>
 </head>
 <body>
@@ -419,6 +476,7 @@
                     <li><a href="#inicio">Inicio</a></li>
                     <li><a href="#portafolio">Portafolio</a></li>
                     <li><a href="#contacto">Contacto</a></li>
+                    <li><button class="clear-data-btn" onclick="clearAllData()">🗑️ Borrar Todo</button></li>
                 </ul>
             </nav>
         </header>
@@ -431,6 +489,9 @@
 
         <section class="portfolio" id="portafolio">
             <h2 class="section-title">📚 Portafolio Académico</h2>
+            <div class="storage-info">
+                💾 Los archivos se guardan localmente en tu navegador usando IndexedDB
+            </div>
             <div class="loading" id="loading">Cargando archivos...</div>
             <div class="units-container" id="unitsContainer"></div>
         </section>
@@ -474,6 +535,7 @@
                         const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
                         objectStore.createIndex('unit', 'unit', { unique: false });
                         objectStore.createIndex('week', 'week', { unique: false });
+                        objectStore.createIndex('timestamp', 'timestamp', { unique: false });
                     }
                 };
             });
@@ -526,6 +588,49 @@
             });
         }
 
+        // Delete all files from a specific week
+        function clearWeekFiles(unit, week) {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                const request = objectStore.getAll();
+
+                request.onsuccess = () => {
+                    const allFiles = request.result;
+                    const filesToDelete = allFiles.filter(f => f.unit === unit && f.week === week);
+                    
+                    let deleteCount = 0;
+                    filesToDelete.forEach(file => {
+                        objectStore.delete(file.id);
+                        deleteCount++;
+                    });
+
+                    transaction.oncomplete = () => {
+                        resolve(deleteCount);
+                    };
+                };
+
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        // Clear all data
+        function clearAllData() {
+            if (confirm('⚠️ ¿Estás seguro de que quieres eliminar TODOS los archivos? Esta acción no se puede deshacer.')) {
+                const transaction = db.transaction([STORE_NAME], 'readwrite');
+                const objectStore = transaction.objectStore(STORE_NAME);
+                const request = objectStore.clear();
+
+                request.onsuccess = () => {
+                    alert('✅ Todos los archivos han sido eliminados');
+                    renderPortfolio();
+                };
+                request.onerror = () => {
+                    alert('❌ Error al eliminar los archivos');
+                };
+            }
+        }
+
         // Render portfolio
         async function renderPortfolio() {
             const container = document.getElementById('unitsContainer');
@@ -561,10 +666,30 @@
             const card = document.createElement('div');
             card.className = 'week-card';
 
-            const title = document.createElement('h4');
-            title.className = 'week-title';
-            title.textContent = `📅 Semana ${week}`;
-            card.appendChild(title);
+            const titleContainer = document.createElement('div');
+            titleContainer.className = 'week-title';
+            
+            const titleText = document.createElement('span');
+            titleText.innerHTML = `📅 Semana ${week}`;
+            
+            const clearBtn = document.createElement('button');
+            clearBtn.className = 'clear-week-btn';
+            clearBtn.textContent = '🗑️ Limpiar';
+            clearBtn.onclick = async () => {
+                if (confirm(`¿Estás seguro de eliminar todos los archivos de la Semana ${week}?`)) {
+                    const count = await clearWeekFiles(unit, week);
+                    if (count > 0) {
+                        alert(`✅ Se eliminaron ${count} archivo(s)`);
+                        await renderFiles(unit, week);
+                    } else {
+                        alert('ℹ️ No hay archivos para eliminar');
+                    }
+                }
+            };
+            
+            titleContainer.appendChild(titleText);
+            titleContainer.appendChild(clearBtn);
+            card.appendChild(titleContainer);
 
             const uploadArea = document.createElement('div');
             uploadArea.className = 'upload-area';
@@ -625,6 +750,20 @@
             try {
                 const files = await getFiles(unit, week);
 
+                // Update file count in title
+                const weekCard = filesList.closest('.week-card');
+                const titleContainer = weekCard.querySelector('.week-title span');
+                const existingCount = titleContainer.querySelector('.file-count');
+                if (existingCount) {
+                    existingCount.remove();
+                }
+                if (files.length > 0) {
+                    const countSpan = document.createElement('span');
+                    countSpan.className = 'file-count';
+                    countSpan.textContent = files.length;
+                    titleContainer.appendChild(countSpan);
+                }
+
                 files.forEach((file) => {
                     const fileItem = document.createElement('div');
                     fileItem.className = 'file-item';
@@ -643,8 +782,10 @@
                         deleteBtn.className = 'delete-btn';
                         deleteBtn.textContent = '🗑️';
                         deleteBtn.onclick = async () => {
-                            await deleteFile(file.id);
-                            await renderFiles(unit, week);
+                            if (confirm('¿Eliminar este archivo?')) {
+                                await deleteFile(file.id);
+                                await renderFiles(unit, week);
+                            }
                         };
                         
                         fileItem.appendChild(img);
@@ -659,8 +800,10 @@
                         deleteBtn.className = 'delete-btn';
                         deleteBtn.textContent = '🗑️';
                         deleteBtn.onclick = async () => {
-                            await deleteFile(file.id);
-                            await renderFiles(unit, week);
+                            if (confirm('¿Eliminar este archivo?')) {
+                                await deleteFile(file.id);
+                                await renderFiles(unit, week);
+                            }
                         };
                         
                         fileItem.appendChild(info);
@@ -716,7 +859,7 @@
                 await renderPortfolio();
             } catch (error) {
                 console.error('Error initializing app:', error);
-                document.getElementById('loading').textContent = 'Error al cargar la aplicación';
+                document.getElementById('loading').textContent = 'Error al cargar la aplicación: ' + error.message;
             }
         })();
     </script>
