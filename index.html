@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portafolio Personal</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Mi Portfolio</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * {
             margin: 0;
@@ -13,855 +13,952 @@
         }
 
         body {
-            font-family: 'Poppins', sans-serif;
-            background: #0a0a0a;
-            color: #e0e0e0;
-            line-height: 1.6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #fff;
         }
 
-        header {
-            background: rgba(20, 20, 20, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0,0,0,0.5);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            border-bottom: 1px solid rgba(187, 134, 252, 0.2);
-        }
-
-        nav {
+        .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+        }
+
+        /* Header */
+        header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 20px 0;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+            margin-bottom: 40px;
         }
 
         .logo {
-            font-size: 24px;
-            font-weight: 700;
-            color: #BB86FC;
-            text-shadow: 0 0 20px rgba(187, 134, 252, 0.5);
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(45deg, #fff, #a8edea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .nav-links {
+        .nav-buttons {
             display: flex;
-            gap: 30px;
-            list-style: none;
+            gap: 15px;
         }
 
-        .nav-links a {
-            text-decoration: none;
-            color: #e0e0e0;
-            font-weight: 500;
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
             transition: all 0.3s ease;
-            position: relative;
+            text-decoration: none;
+            display: inline-block;
         }
 
-        .nav-links a::after {
+        .btn-primary {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .btn-primary:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-logout:hover {
+            background: rgba(255,100,100,0.4);
+        }
+
+        /* Home Section */
+        .home-section {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 50px;
+            align-items: center;
+            margin: 60px 0;
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .profile-image {
+            width: 300px;
+            height: 300px;
+            border-radius: 30px;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            border: 3px solid rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 27px;
+        }
+
+        .profile-image::before {
             content: '';
             position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: #BB86FC;
-            transition: width 0.3s ease;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
         }
 
-        .nav-links a:hover {
-            color: #BB86FC;
+        @keyframes shine {
+            0%, 100% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            50% { transform: translateX(100%) translateY(100%) rotate(45deg); }
         }
 
-        .nav-links a:hover::after {
+        .profile-info h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            background: linear-gradient(45deg, #fff, #a8edea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .profile-info p {
+            font-size: 18px;
+            line-height: 1.8;
+            color: rgba(255,255,255,0.9);
+            background: rgba(255,255,255,0.1);
+            padding: 25px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Login Section */
+        .login-section {
+            max-width: 450px;
+            margin: 80px auto;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(20px);
+            padding: 50px;
+            border-radius: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 2px solid rgba(255,255,255,0.2);
+            animation: fadeIn 0.8s ease;
+        }
+
+        .login-section h2 {
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 36px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-group input {
             width: 100%;
+            padding: 15px;
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 15px;
+            background: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 16px;
+            transition: all 0.3s ease;
         }
 
-        .clear-data-btn {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%);
+        .form-group input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.15);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
             color: white;
             border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            font-family: 'Poppins', sans-serif;
-            font-size: 14px;
-        }
-
-        .clear-data-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
-        }
-
-        .hamburger {
-            display: none;
-            flex-direction: column;
-            cursor: pointer;
-            gap: 5px;
-        }
-
-        .hamburger span {
-            width: 25px;
-            height: 3px;
-            background: #BB86FC;
-            border-radius: 3px;
-            transition: all 0.3s ease;
-        }
-
-        .hero {
-            max-width: 1200px;
-            margin: 60px auto;
-            padding: 40px 20px;
-            text-align: center;
-        }
-
-        .profile-img {
-            width: 180px;
-            height: 180px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 5px solid #BB86FC;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 40px rgba(187, 134, 252, 0.4);
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .hero h1 {
-            font-size: 48px;
-            margin-bottom: 15px;
-            color: #ffffff;
-            text-shadow: 0 0 30px rgba(187, 134, 252, 0.5);
-        }
-
-        .hero .subtitle {
-            font-size: 20px;
-            color: #BB86FC;
-            margin-bottom: 20px;
-            font-weight: 400;
-        }
-
-        .hero p {
-            max-width: 700px;
-            margin: 0 auto;
-            color: #b0b0b0;
-            font-size: 16px;
-            line-height: 1.8;
-        }
-
-        .portfolio {
-            max-width: 1200px;
-            margin: 60px auto;
-            padding: 0 20px;
-        }
-
-        .section-title {
-            font-size: 36px;
-            text-align: center;
-            margin-bottom: 50px;
-            color: #ffffff;
-            text-shadow: 0 0 20px rgba(187, 134, 252, 0.3);
-        }
-
-        .units-container {
-            display: grid;
-            gap: 30px;
-        }
-
-        .unit {
-            background: rgba(30, 30, 30, 0.8);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(187, 134, 252, 0.2);
             border-radius: 15px;
-            padding: 30px;
-            box-shadow: 0 5px 30px rgba(0,0,0,0.5);
-            transition: all 0.3s ease;
-        }
-
-        .unit:hover {
-            transform: translateY(-5px);
-            border-color: #BB86FC;
-            box-shadow: 0 10px 40px rgba(187, 134, 252, 0.3);
-        }
-
-        .unit-title {
-            font-size: 24px;
-            color: #BB86FC;
-            margin-bottom: 25px;
-            border-bottom: 3px solid #BB86FC;
-            padding-bottom: 10px;
-        }
-
-        .weeks-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-        }
-
-        .week-card {
-            background: rgba(40, 40, 40, 0.6);
-            border-radius: 12px;
-            padding: 20px;
-            border: 2px solid rgba(187, 134, 252, 0.2);
-            transition: all 0.3s ease;
-        }
-
-        .week-card:hover {
-            border-color: #BB86FC;
-            box-shadow: 0 5px 20px rgba(187, 134, 252, 0.3);
-            background: rgba(40, 40, 40, 0.8);
-        }
-
-        .week-title {
             font-size: 18px;
             font-weight: 600;
-            margin-bottom: 15px;
-            color: #e0e0e0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .clear-week-btn {
-            background: linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%);
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 11px;
-            transition: all 0.3s ease;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        .clear-week-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 3px 10px rgba(255, 107, 107, 0.4);
-        }
-
-        .file-count {
-            background: rgba(187, 134, 252, 0.2);
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            color: #BB86FC;
-            margin-left: 8px;
-        }
-
-        .upload-area {
-            border: 2px dashed rgba(187, 134, 252, 0.4);
-            border-radius: 8px;
-            padding: 20px;
-            text-align: center;
             cursor: pointer;
             transition: all 0.3s ease;
-            margin-bottom: 15px;
-            background: rgba(187, 134, 252, 0.05);
+            margin-top: 20px;
         }
 
-        .upload-area:hover {
-            border-color: #BB86FC;
-            background: rgba(187, 134, 252, 0.1);
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
         }
 
-        .upload-area input {
+        .error-message {
+            background: rgba(255,100,100,0.2);
+            color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,100,100,0.3);
             display: none;
         }
 
-        .upload-icon {
+        .success-message {
+            background: rgba(100,255,100,0.2);
+            color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(100,255,100,0.3);
+            display: none;
+        }
+
+        /* Weeks Section */
+        .weeks-section {
+            animation: fadeIn 0.8s ease;
+        }
+
+        .weeks-header {
+            margin-bottom: 40px;
+        }
+
+        .weeks-header h2 {
             font-size: 36px;
             margin-bottom: 10px;
         }
 
-        .upload-area p {
-            color: #b0b0b0;
-            font-size: 14px;
+        .weeks-header p {
+            color: rgba(255,255,255,0.8);
+            font-size: 16px;
         }
 
-        .files-list {
+        .week-grid {
             display: grid;
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            margin-bottom: 40px;
+        }
+
+        .week-card {
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            border: 2px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            min-height: 200px;
+        }
+
+        .week-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            background: rgba(255,255,255,0.15);
+        }
+
+        .week-card h3 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #a8edea;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(255,255,255,0.3);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .upload-area:hover {
+            border-color: rgba(255,255,255,0.5);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .upload-area.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        .upload-area input[type="file"] {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .upload-text {
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .file-list {
             margin-top: 15px;
         }
 
         .file-item {
-            background: rgba(50, 50, 50, 0.8);
-            padding: 12px;
-            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .file-name {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-            border: 1px solid rgba(187, 134, 252, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .file-item:hover {
-            border-color: #BB86FC;
-            transform: translateX(5px);
-        }
-
-        .file-item img {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border-radius: 5px;
-            margin-right: 10px;
-            border: 1px solid rgba(187, 134, 252, 0.3);
-            cursor: pointer;
-        }
-
-        .file-info {
+            gap: 10px;
             flex: 1;
-            font-size: 14px;
-            color: #b0b0b0;
+            overflow: hidden;
+        }
+
+        .file-name span {
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
         }
 
-        .delete-btn {
-            background: linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%);
-            color: white;
+        .file-icon {
+            font-size: 18px;
+        }
+
+        .file-user {
+            font-size: 11px;
+            color: rgba(255,255,255,0.6);
+            margin-top: 3px;
+        }
+
+        .btn-delete {
+            background: rgba(255,100,100,0.3);
             border: none;
-            padding: 6px 12px;
-            border-radius: 5px;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 12px;
-            transition: all 0.3s ease;
-            font-family: 'Poppins', sans-serif;
+            transition: all 0.2s ease;
         }
 
-        .delete-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 3px 10px rgba(255, 107, 107, 0.4);
+        .btn-delete:hover {
+            background: rgba(255,100,100,0.5);
+        }
+
+        .btn-delete.hidden {
+            display: none;
+        }
+
+        .btn-download {
+            background: rgba(100,200,255,0.3);
+            border: none;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            margin-right: 5px;
+        }
+
+        .btn-download:hover {
+            background: rgba(100,200,255,0.5);
+        }
+
+        .file-actions {
+            display: flex;
+            gap: 5px;
         }
 
         .loading {
             text-align: center;
             padding: 20px;
-            color: #BB86FC;
-            font-size: 18px;
+            color: rgba(255,255,255,0.7);
         }
 
-        footer {
-            background: rgba(20, 20, 20, 0.95);
-            color: #e0e0e0;
-            text-align: center;
-            padding: 40px 20px;
-            margin-top: 80px;
-            border-top: 1px solid rgba(187, 134, 252, 0.2);
+        .hidden {
+            display: none !important;
         }
 
-        .social-links {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .social-links a {
-            color: #e0e0e0;
-            font-size: 24px;
-            transition: all 0.3s ease;
-            text-decoration: none;
-        }
-
-        .social-links a:hover {
-            color: #BB86FC;
-            transform: scale(1.2);
-            text-shadow: 0 0 20px rgba(187, 134, 252, 0.6);
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover, 
+        input:-webkit-autofill:focus {
+            -webkit-text-fill-color: white;
+            -webkit-box-shadow: 0 0 0px 1000px rgba(255,255,255,0.1) inset;
+            transition: background-color 5000s ease-in-out 0s;
         }
 
         @media (max-width: 768px) {
-            .nav-links {
-                position: fixed;
-                top: 70px;
-                left: -100%;
-                flex-direction: column;
-                background: rgba(20, 20, 20, 0.98);
-                width: 100%;
-                padding: 20px;
-                box-shadow: 0 5px 20px rgba(0,0,0,0.5);
-                transition: left 0.3s ease;
-                border-bottom: 1px solid rgba(187, 134, 252, 0.2);
+            .home-section {
+                grid-template-columns: 1fr;
+                text-align: center;
             }
 
-            .nav-links.active {
-                left: 0;
+            .profile-image {
+                margin: 0 auto;
             }
 
-            .hamburger {
-                display: flex;
-            }
-
-            .hero h1 {
-                font-size: 32px;
-            }
-
-            .hero .subtitle {
-                font-size: 18px;
-            }
-
-            .section-title {
-                font-size: 28px;
-            }
-
-            .weeks-grid {
+            .week-grid {
                 grid-template-columns: 1fr;
             }
-        }
 
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.9);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            max-width: 90%;
-            max-height: 90%;
-            object-fit: contain;
-        }
-
-        .modal-close {
-            position: absolute;
-            top: 20px;
-            right: 40px;
-            color: #fff;
-            font-size: 40px;
-            cursor: pointer;
-        }
-
-        .storage-info {
-            text-align: center;
-            padding: 10px;
-            background: rgba(187, 134, 252, 0.1);
-            border-radius: 8px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            color: #b0b0b0;
+            .nav-buttons {
+                flex-wrap: wrap;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="main-content">
+    <div class="container">
         <header>
-            <nav>
-                <div class="logo">✨ Mi Portafolio</div>
-                <div class="hamburger" id="hamburger">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </div>
-                <ul class="nav-links" id="navLinks">
-                    <li><a href="#inicio">Inicio</a></li>
-                    <li><a href="#portafolio">Portafolio</a></li>
-                    <li><a href="#contacto">Contacto</a></li>
-                    <li><button class="clear-data-btn" onclick="clearAllData()">🗑️ Borrar Todo</button></li>
-                </ul>
-            </nav>
+            <div class="logo">Mi Portfolio</div>
+            <div class="nav-buttons">
+                <button class="btn btn-primary" id="homeBtn" onclick="showHome()">Inicio</button>
+                <button class="btn btn-primary" id="weeksBtn" onclick="showWeeks()">Semanas</button>
+                <button class="btn btn-primary" id="loginBtn" onclick="showLogin()">Iniciar Sesión</button>
+                <button class="btn btn-logout hidden" id="logoutBtn" onclick="logout()">Cerrar Sesión</button>
+            </div>
         </header>
 
-        <section class="hero" id="inicio">
-            <h1>Canorio Bashualdo Manuel</h1>
-            <p class="subtitle">Estudiante | Desarrollador | Diseñador</p>
-            <p>Bienvenido a mi portafolio personal. Aquí encontrarás una colección de mis trabajos académicos organizados por unidades y semanas. Soy apasionado por el aprendizaje continuo y el desarrollo de proyectos innovadores.</p>
-        </section>
-
-        <section class="portfolio" id="portafolio">
-            <h2 class="section-title">📚 Portafolio Académico</h2>
-            <div class="storage-info">
-                💾 Los archivos se guardan localmente en tu navegador usando IndexedDB
+        <!-- Home Section -->
+        <div class="home-section" id="homeSection">
+            <div class="profile-image">
+                👤
             </div>
-            <div class="loading" id="loading">Cargando archivos...</div>
-            <div class="units-container" id="unitsContainer"></div>
-        </section>
-
-        <footer id="contacto">
-            <p>&copy; 2025 Canorio Bashualdo Manuel.</p>
-            <div class="social-links">
-                <a href="https://github.com" target="_blank" title="GitHub">🔗</a>
-                <a href="https://linkedin.com" target="_blank" title="LinkedIn">💼</a>
-                <a href="mailto:tuemail@ejemplo.com" title="Email">📧</a>
+            <div class="profile-info">
+                <h1>Tu Nombre</h1>
+                <p>
+                    Hola! Soy un estudiante apasionado por el aprendizaje continuo. 
+                    En este espacio personal comparto mi progreso semanal, proyectos y 
+                    tareas que voy completando a lo largo del semestre. 
+                    Mi objetivo es documentar mi crecimiento y mantener un registro 
+                    organizado de todas mis actividades académicas durante las 16 semanas del curso.
+                </p>
             </div>
-        </footer>
-    </div>
+        </div>
 
-    <div class="modal" id="imageModal">
-        <span class="modal-close" id="modalClose">&times;</span>
-        <img class="modal-content" id="modalImage">
+        <!-- Login Section -->
+        <div class="login-section hidden" id="loginSection">
+            <h2>Iniciar Sesión</h2>
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" id="email" placeholder="tu@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-submit">Entrar</button>
+            </form>
+        </div>
+
+        <!-- Weeks Section -->
+        <div class="weeks-section hidden" id="weeksSection">
+            <div class="weeks-header">
+                <h2>Semanas del Curso</h2>
+                <p>Sube tus archivos y tareas para cada semana del semestre</p>
+            </div>
+
+            <div class="week-grid" id="weekGrid">
+                <div class="loading">Cargando semanas...</div>
+            </div>
+        </div>
     </div>
 
     <script>
-        // IndexedDB setup
-        let db;
-        const DB_NAME = 'PortfolioDB';
-        const DB_VERSION = 1;
-        const STORE_NAME = 'files';
+        // ============================================
+        // CONFIGURACIÓN DE SUPABASE
+        // ============================================
+        // IMPORTANTE: Reemplaza con tus credenciales reales
+        const SUPABASE_URL = 'https://anngniwredatpzexycmr.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFubmduaXdyZWRhdHB6ZXh5Y21yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA3MDY0MTIsImV4cCI6MjA3NjI4MjQxMn0.LjYdLFLwNcyFP1KimhXFzXDfq1vJjKblg56hluLechk';
+        
+        let supabase;
+        let currentUser = null;
 
-        // Initialize IndexedDB
-        function initDB() {
-            return new Promise((resolve, reject) => {
-                const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-                request.onerror = () => reject(request.error);
-                request.onsuccess = () => {
-                    db = request.result;
-                    resolve(db);
-                };
-
-                request.onupgradeneeded = (event) => {
-                    db = event.target.result;
-                    if (!db.objectStoreNames.contains(STORE_NAME)) {
-                        const objectStore = db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
-                        objectStore.createIndex('unit', 'unit', { unique: false });
-                        objectStore.createIndex('week', 'week', { unique: false });
-                        objectStore.createIndex('timestamp', 'timestamp', { unique: false });
-                    }
-                };
-            });
-        }
-
-        // Save file to IndexedDB
-        function saveFile(unit, week, fileData) {
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction([STORE_NAME], 'readwrite');
-                const objectStore = transaction.objectStore(STORE_NAME);
-                const request = objectStore.add({
-                    unit: unit,
-                    week: week,
-                    name: fileData.name,
-                    type: fileData.type,
-                    data: fileData.data,
-                    timestamp: Date.now()
-                });
-
-                request.onsuccess = () => resolve(request.result);
-                request.onerror = () => reject(request.error);
-            });
-        }
-
-        // Get files from IndexedDB
-        function getFiles(unit, week) {
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction([STORE_NAME], 'readonly');
-                const objectStore = transaction.objectStore(STORE_NAME);
-                const request = objectStore.getAll();
-
-                request.onsuccess = () => {
-                    const allFiles = request.result;
-                    const filtered = allFiles.filter(f => f.unit === unit && f.week === week);
-                    resolve(filtered);
-                };
-                request.onerror = () => reject(request.error);
-            });
-        }
-
-        // Delete file from IndexedDB
-        function deleteFile(id) {
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction([STORE_NAME], 'readwrite');
-                const objectStore = transaction.objectStore(STORE_NAME);
-                const request = objectStore.delete(id);
-
-                request.onsuccess = () => resolve();
-                request.onerror = () => reject(request.error);
-            });
-        }
-
-        // Delete all files from a specific week
-        function clearWeekFiles(unit, week) {
-            return new Promise((resolve, reject) => {
-                const transaction = db.transaction([STORE_NAME], 'readwrite');
-                const objectStore = transaction.objectStore(STORE_NAME);
-                const request = objectStore.getAll();
-
-                request.onsuccess = () => {
-                    const allFiles = request.result;
-                    const filesToDelete = allFiles.filter(f => f.unit === unit && f.week === week);
-                    
-                    let deleteCount = 0;
-                    filesToDelete.forEach(file => {
-                        objectStore.delete(file.id);
-                        deleteCount++;
-                    });
-
-                    transaction.oncomplete = () => {
-                        resolve(deleteCount);
-                    };
-                };
-
-                request.onerror = () => reject(request.error);
-            });
-        }
-
-        // Clear all data
-        function clearAllData() {
-            if (confirm('⚠️ ¿Estás seguro de que quieres eliminar TODOS los archivos? Esta acción no se puede deshacer.')) {
-                const transaction = db.transaction([STORE_NAME], 'readwrite');
-                const objectStore = transaction.objectStore(STORE_NAME);
-                const request = objectStore.clear();
-
-                request.onsuccess = () => {
-                    alert('✅ Todos los archivos han sido eliminados');
-                    renderPortfolio();
-                };
-                request.onerror = () => {
-                    alert('❌ Error al eliminar los archivos');
-                };
-            }
-        }
-
-        // Render portfolio
-        async function renderPortfolio() {
-            const container = document.getElementById('unitsContainer');
-            const loading = document.getElementById('loading');
-            container.innerHTML = '';
-
-            for (let unit = 1; unit <= 4; unit++) {
-                const unitDiv = document.createElement('div');
-                unitDiv.className = 'unit';
+        // ============================================
+        // INICIALIZACIÓN
+        // ============================================
+        async function init() {
+            try {
+                // Inicializar Supabase
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
                 
-                const unitTitle = document.createElement('h3');
-                unitTitle.className = 'unit-title';
-                unitTitle.textContent = `📖 Unidad ${unit}`;
-                unitDiv.appendChild(unitTitle);
-
-                const weeksGrid = document.createElement('div');
-                weeksGrid.className = 'weeks-grid';
-
-                for (let week = 1; week <= 4; week++) {
-                    const weekCard = await createWeekCard(unit, week);
-                    weeksGrid.appendChild(weekCard);
+                // Verificar sesión activa
+                const { data: { session } } = await supabase.auth.getSession();
+                
+                if (session) {
+                    currentUser = session.user;
+                    showAuthenticatedUI();
                 }
-
-                unitDiv.appendChild(weeksGrid);
-                container.appendChild(unitDiv);
-            }
-
-            loading.style.display = 'none';
-        }
-
-        // Create week card
-        async function createWeekCard(unit, week) {
-            const card = document.createElement('div');
-            card.className = 'week-card';
-
-            const titleContainer = document.createElement('div');
-            titleContainer.className = 'week-title';
-            
-            const titleText = document.createElement('span');
-            titleText.innerHTML = `📅 Semana ${week}`;
-            
-            const clearBtn = document.createElement('button');
-            clearBtn.className = 'clear-week-btn';
-            clearBtn.textContent = '🗑️ Limpiar';
-            clearBtn.onclick = async () => {
-                if (confirm(`¿Estás seguro de eliminar todos los archivos de la Semana ${week}?`)) {
-                    const count = await clearWeekFiles(unit, week);
-                    if (count > 0) {
-                        alert(`✅ Se eliminaron ${count} archivo(s)`);
-                        await renderFiles(unit, week);
-                    } else {
-                        alert('ℹ️ No hay archivos para eliminar');
-                    }
-                }
-            };
-            
-            titleContainer.appendChild(titleText);
-            titleContainer.appendChild(clearBtn);
-            card.appendChild(titleContainer);
-
-            const uploadArea = document.createElement('div');
-            uploadArea.className = 'upload-area';
-            uploadArea.innerHTML = `
-                <div class="upload-icon">📁</div>
-                <p>Haz clic para subir archivos</p>
-                <input type="file" multiple accept="image/*,.pdf,.doc,.docx">
-            `;
-            card.appendChild(uploadArea);
-
-            const filesList = document.createElement('div');
-            filesList.className = 'files-list';
-            filesList.id = `files-unit${unit}-week${week}`;
-            card.appendChild(filesList);
-
-            const input = uploadArea.querySelector('input');
-            uploadArea.addEventListener('click', () => input.click());
-            
-            input.addEventListener('change', async function(e) {
-                await handleFileUpload(e.target.files, unit, week);
-                e.target.value = '';
-            });
-
-            await renderFiles(unit, week);
-
-            return card;
-        }
-
-        // Handle file upload
-        async function handleFileUpload(files, unit, week) {
-            for (const file of Array.from(files)) {
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    const fileData = {
-                        name: file.name,
-                        type: file.type,
-                        data: e.target.result
-                    };
-                    try {
-                        await saveFile(unit, week, fileData);
-                        await renderFiles(unit, week);
-                    } catch (error) {
-                        console.error('Error saving file:', error);
-                        alert('Error al guardar el archivo');
-                    }
-                };
-                reader.readAsDataURL(file);
+                
+                // Crear las tarjetas de semanas
+                await createWeekCards();
+                
+            } catch (error) {
+                console.error('Error al inicializar:', error);
+                showError('Error al conectar con Supabase. Verifica tus credenciales.');
             }
         }
 
-        // Render files
-        async function renderFiles(unit, week) {
-            const filesList = document.getElementById(`files-unit${unit}-week${week}`);
-            if (!filesList) return;
+        // ============================================
+        // NAVEGACIÓN
+        // ============================================
+        function showHome() {
+            document.getElementById('homeSection').classList.remove('hidden');
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('weeksSection').classList.add('hidden');
+        }
+
+        function showLogin() {
+            document.getElementById('homeSection').classList.add('hidden');
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('weeksSection').classList.add('hidden');
+        }
+
+        async function showWeeks() {
+            document.getElementById('homeSection').classList.add('hidden');
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('weeksSection').classList.remove('hidden');
+            await loadAllFiles();
+        }
+
+        // ============================================
+        // AUTENTICACIÓN
+        // ============================================
+        async function handleLogin(event) {
+            event.preventDefault();
             
-            filesList.innerHTML = '';
-            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
             try {
-                const files = await getFiles(unit, week);
-
-                // Update file count in title
-                const weekCard = filesList.closest('.week-card');
-                const titleContainer = weekCard.querySelector('.week-title span');
-                const existingCount = titleContainer.querySelector('.file-count');
-                if (existingCount) {
-                    existingCount.remove();
-                }
-                if (files.length > 0) {
-                    const countSpan = document.createElement('span');
-                    countSpan.className = 'file-count';
-                    countSpan.textContent = files.length;
-                    titleContainer.appendChild(countSpan);
-                }
-
-                files.forEach((file) => {
-                    const fileItem = document.createElement('div');
-                    fileItem.className = 'file-item';
-
-                    if (file.type.startsWith('image/')) {
-                        const img = document.createElement('img');
-                        img.src = file.data;
-                        img.alt = file.name;
-                        img.onclick = () => openModal(file.data);
-                        
-                        const info = document.createElement('span');
-                        info.className = 'file-info';
-                        info.textContent = file.name;
-                        
-                        const deleteBtn = document.createElement('button');
-                        deleteBtn.className = 'delete-btn';
-                        deleteBtn.textContent = '🗑️';
-                        deleteBtn.onclick = async () => {
-                            if (confirm('¿Eliminar este archivo?')) {
-                                await deleteFile(file.id);
-                                await renderFiles(unit, week);
-                            }
-                        };
-                        
-                        fileItem.appendChild(img);
-                        fileItem.appendChild(info);
-                        fileItem.appendChild(deleteBtn);
-                    } else {
-                        const info = document.createElement('span');
-                        info.className = 'file-info';
-                        info.textContent = `📄 ${file.name}`;
-                        
-                        const deleteBtn = document.createElement('button');
-                        deleteBtn.className = 'delete-btn';
-                        deleteBtn.textContent = '🗑️';
-                        deleteBtn.onclick = async () => {
-                            if (confirm('¿Eliminar este archivo?')) {
-                                await deleteFile(file.id);
-                                await renderFiles(unit, week);
-                            }
-                        };
-                        
-                        fileItem.appendChild(info);
-                        fileItem.appendChild(deleteBtn);
-                    }
-
-                    filesList.appendChild(fileItem);
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email: email,
+                    password: password
                 });
+
+                if (error) throw error;
+
+                currentUser = data.user;
+                showAuthenticatedUI();
+                showSuccess('Sesión iniciada correctamente');
+                
+                setTimeout(async () => {
+                    await showWeeks();
+                    await createWeekCards();
+                }, 1500);
+                
+                document.getElementById('loginForm').reset();
             } catch (error) {
-                console.error('Error rendering files:', error);
+                showError('Error al iniciar sesión: ' + error.message);
             }
         }
 
-        // Modal functions
-        function openModal(imageSrc) {
-            const modal = document.getElementById('imageModal');
-            const modalImg = document.getElementById('modalImage');
-            modal.classList.add('active');
-            modalImg.src = imageSrc;
-        }
-
-        document.getElementById('modalClose').onclick = function() {
-            document.getElementById('imageModal').classList.remove('active');
-        };
-
-        document.getElementById('imageModal').onclick = function(e) {
-            if (e.target === this) {
-                this.classList.remove('active');
-            }
-        };
-
-        // Hamburger menu
-        document.getElementById('hamburger').addEventListener('click', function() {
-            document.getElementById('navLinks').classList.toggle('active');
-        });
-
-        // Smooth scroll
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                const target = document.querySelector(this.getAttribute('href'));
-                if (target) {
-                    target.scrollIntoView({ behavior: 'smooth' });
-                    document.getElementById('navLinks').classList.remove('active');
-                }
-            });
-        });
-
-        // Initialize app
-        (async function() {
+        async function logout() {
             try {
-                await initDB();
-                await renderPortfolio();
+                await supabase.auth.signOut();
+                currentUser = null;
+                showUnauthenticatedUI();
+                await createWeekCards();
+                showHome();
+                showSuccess('Sesión cerrada');
             } catch (error) {
-                console.error('Error initializing app:', error);
-                document.getElementById('loading').textContent = 'Error al cargar la aplicación: ' + error.message;
+                showError('Error al cerrar sesión');
             }
-        })();
+        }
+
+        function showAuthenticatedUI() {
+            document.getElementById('loginBtn').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+        }
+
+        function showUnauthenticatedUI() {
+            document.getElementById('loginBtn').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+        }
+
+        // ============================================
+        // CREAR TARJETAS DE SEMANAS
+        // ============================================
+        async function createWeekCards() {
+            const grid = document.getElementById('weekGrid');
+            grid.innerHTML = '';
+
+            for (let i = 1; i <= 16; i++) {
+                const card = document.createElement('div');
+                card.className = 'week-card';
+                
+                const uploadAreaClass = currentUser ? 'upload-area' : 'upload-area disabled';
+                const uploadText = currentUser ? 'Click para subir archivos' : 'Inicia sesión para subir archivos';
+                
+                card.innerHTML = `
+                    <h3>Semana ${i}</h3>
+                    <div class="${uploadAreaClass}" onclick="${currentUser ? `document.getElementById('fileInput${i}').click()` : ''}">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">${uploadText}</div>
+                        ${currentUser ? `<input type="file" id="fileInput${i}" multiple onchange="handleFileUpload(${i}, event)">` : ''}
+                    </div>
+                    <div class="file-list" id="fileList${i}">
+                        <div class="loading" style="font-size: 12px;">Cargando archivos...</div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            }
+
+            await loadAllFiles();
+        }
+
+        // ============================================
+        // SUBIR ARCHIVOS
+        // ============================================
+        async function handleFileUpload(weekNumber, event) {
+            if (!currentUser) {
+                showError('Debes iniciar sesión primero');
+                return;
+            }
+
+            const files = Array.from(event.target.files);
+            
+            try {
+                for (const file of files) {
+                    // Limpiar el nombre del archivo (remover caracteres especiales)
+                    const cleanFileName = file.name
+                        .normalize('NFD')
+                        .replace(/[\u0300-\u036f]/g, '') // Remover acentos
+                        .replace(/[^a-zA-Z0-9._-]/g, '_') // Reemplazar caracteres especiales
+                        .replace(/_{2,}/g, '_'); // Evitar múltiples guiones bajos seguidos
+                    
+                    // Crear nombre único para el archivo
+                    const timestamp = Date.now();
+                    const fileName = `${currentUser.id}/${weekNumber}/${timestamp}_${cleanFileName}`;
+
+                    // Subir archivo a Supabase Storage
+                    const { data: uploadData, error: uploadError } = await supabase.storage
+                        .from('week-files')
+                        .upload(fileName, file, {
+                            cacheControl: '3600',
+                            upsert: false
+                        });
+
+                    if (uploadError) throw uploadError;
+
+                    // Guardar metadata en la tabla
+                    const { error: dbError } = await supabase
+                        .from('files')
+                        .insert([
+                            {
+                                user_id: currentUser.id,
+                                user_email: currentUser.email,
+                                week_number: weekNumber,
+                                file_name: file.name,
+                                file_path: fileName,
+                                file_size: file.size,
+                                file_type: file.type
+                            }
+                        ]);
+
+                    if (dbError) throw dbError;
+                }
+
+                showSuccess(`${files.length} archivo(s) agregado(s) a la Semana ${weekNumber}`);
+                await loadAllFiles();
+                
+                // Limpiar el input de archivo
+                event.target.value = '';
+                
+            } catch (error) {
+                console.error('Error al subir archivo:', error);
+                showError('Error al subir archivo: ' + error.message);
+            }
+        }
+
+        // ============================================
+        // CARGAR ARCHIVOS
+        // ============================================
+        async function loadAllFiles() {
+            try {
+                // Obtener todos los archivos de la base de datos
+                const { data: files, error } = await supabase
+                    .from('files')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                // Limpiar todas las listas
+                for (let i = 1; i <= 16; i++) {
+                    const fileList = document.getElementById(`fileList${i}`);
+                    if (fileList) fileList.innerHTML = '';
+                }
+
+                // Agrupar archivos por semana y mostrarlos
+                files.forEach(file => {
+                    displayFile(file);
+                });
+
+            } catch (error) {
+                console.error('Error al cargar archivos:', error);
+                showError('Error al cargar archivos');
+            }
+        }
+
+        // ============================================
+        // MOSTRAR ARCHIVO
+        // ============================================
+        function displayFile(file) {
+            const fileList = document.getElementById(`fileList${file.week_number}`);
+            if (!fileList) return;
+
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            
+            const fileIcon = getFileIcon(file.file_name);
+            const canDelete = currentUser && currentUser.id === file.user_id;
+            
+            // Escapar comillas en los nombres de archivo
+            const escapedPath = file.file_path.replace(/'/g, "\\'");
+            const escapedName = file.file_name.replace(/'/g, "\\'");
+            
+            // Botones de acción
+            let actionButtons = '';
+            if (canDelete) {
+                // Usuario autenticado puede ver, descargar y eliminar sus archivos
+                actionButtons = `
+                    <div class="file-actions">
+                        <button class="btn-download" onclick="window.viewFile('${escapedPath}', '${escapedName}')">👁️ Ver</button>
+                        <button class="btn-download" onclick="window.downloadFile('${escapedPath}', '${escapedName}')">⬇️</button>
+                        <button class="btn-delete" onclick="window.deleteFile('${file.id}', ${file.week_number})">✕</button>
+                    </div>
+                `;
+            } else if (currentUser) {
+                // Usuario autenticado puede ver y descargar archivos de otros
+                actionButtons = `
+                    <div class="file-actions">
+                        <button class="btn-download" onclick="window.viewFile('${escapedPath}', '${escapedName}')">👁️ Ver</button>
+                        <button class="btn-download" onclick="window.downloadFile('${escapedPath}', '${escapedName}')">⬇️</button>
+                    </div>
+                `;
+            } else {
+                // Usuario NO autenticado solo puede ver y descargar
+                actionButtons = `
+                    <div class="file-actions">
+                        <button class="btn-download" onclick="window.viewFile('${escapedPath}', '${escapedName}')">👁️ Ver</button>
+                        <button class="btn-download" onclick="window.downloadFile('${escapedPath}', '${escapedName}')">⬇️</button>
+                    </div>
+                `;
+            }
+            
+            fileItem.innerHTML = `
+                <div class="file-name">
+                    <span class="file-icon">${fileIcon}</span>
+                    <div>
+                        <span title="${file.file_name}">${file.file_name}</span>
+                        <div class="file-user">Subido por: ${file.user_email}</div>
+                    </div>
+                </div>
+                ${actionButtons}
+            `;
+            
+            fileList.appendChild(fileItem);
+        }
+
+        // ============================================
+        // VER ARCHIVO
+        // ============================================
+        window.viewFile = async function(filePath, fileName) {
+            try {
+                // Obtener URL pública del archivo
+                const { data, error } = await supabase.storage
+                    .from('week-files')
+                    .createSignedUrl(filePath, 3600); // URL válida por 1 hora
+
+                if (error) throw error;
+
+                // Abrir en nueva pestaña
+                window.open(data.signedUrl, '_blank');
+
+            } catch (error) {
+                console.error('Error al ver archivo:', error);
+                showError('Error al ver archivo: ' + error.message);
+            }
+        }
+
+        // ============================================
+        // DESCARGAR ARCHIVO
+        // ============================================
+        window.downloadFile = async function(filePath, fileName) {
+            try {
+                // Descargar archivo
+                const { data, error } = await supabase.storage
+                    .from('week-files')
+                    .download(filePath);
+
+                if (error) throw error;
+
+                // Crear URL del blob y descargar
+                const url = URL.createObjectURL(data);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                showSuccess('Archivo descargado correctamente');
+
+            } catch (error) {
+                console.error('Error al descargar archivo:', error);
+                showError('Error al descargar archivo: ' + error.message);
+            }
+        }
+
+        // ============================================
+        // ELIMINAR ARCHIVO
+        // ============================================
+        window.deleteFile = async function(fileId, weekNumber) {
+            if (!currentUser) {
+                showError('Debes iniciar sesión primero');
+                return;
+            }
+
+            try {
+                // Obtener información del archivo
+                const { data: file, error: fetchError } = await supabase
+                    .from('files')
+                    .select('*')
+                    .eq('id', fileId)
+                    .single();
+
+                if (fetchError) throw fetchError;
+
+                // Verificar que el usuario sea el dueño
+                if (file.user_id !== currentUser.id) {
+                    showError('No puedes eliminar archivos de otros usuarios');
+                    return;
+                }
+
+                // Eliminar de Storage
+                const { error: storageError } = await supabase.storage
+                    .from('week-files')
+                    .remove([file.file_path]);
+
+                if (storageError) throw storageError;
+
+                // Eliminar de la base de datos
+                const { error: dbError } = await supabase
+                    .from('files')
+                    .delete()
+                    .eq('id', fileId);
+
+                if (dbError) throw dbError;
+
+                showSuccess('Archivo eliminado correctamente');
+                await loadAllFiles();
+
+            } catch (error) {
+                console.error('Error al eliminar archivo:', error);
+                showError('Error al eliminar archivo: ' + error.message);
+            }
+        }
+
+        // ============================================
+        // UTILIDADES
+        // ============================================
+        function getFileIcon(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const icons = {
+                pdf: '📄',
+                doc: '📝',
+                docx: '📝',
+                txt: '📝',
+                xls: '📊',
+                xlsx: '📊',
+                ppt: '📊',
+                pptx: '📊',
+                jpg: '🖼️',
+                jpeg: '🖼️',
+                png: '🖼️',
+                gif: '🖼️',
+                zip: '🗜️',
+                rar: '🗜️',
+                mp4: '🎥',
+                mp3: '🎵',
+                default: '📎'
+            };
+            return icons[ext] || icons.default;
+        }
+
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                successDiv.style.display = 'none';
+            }, 3000);
+        }
+
+        // ============================================
+        // INICIAR APLICACIÓN
+        // ============================================
+        window.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
